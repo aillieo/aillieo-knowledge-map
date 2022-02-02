@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="jsmind/style/jsmind.css" />
+        <script type="text/javascript" src="jsmind/js/jsmind.js"></script>
+        <script type="text/javascript" src="jsmind/js/jsmind.draggable.js"></script>
+    </head>
+    <body>
+        <div id="layout">
+            <div id="menu">
+                <ul type="">
+                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
+                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
+                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
+                </ul>
+            </div>
+            <div id="jsmind_container"></div>
+        </div>
+
+        <script type="text/javascript">
+            var _jm = null;
+            function loadData(){
+
+                var mind_url = null;
+
+                var radios = document.getElementsByName('radio_tab_main');
+
+                for (var i = 0; i < radios.length; i++) {
+                    var radio = radios[i];
+                    if (radio.checked) {
+                        var checked_value = radio.value;
+                        mind_url = checked_value;
+                    }
+                }
+
+                jsMind.util.ajax.get(mind_url,function(mind){
+                    if(!!mind){
+                        _jm.show(mind);
+                    }else{
+                        alert('can not open this file as mindmap');
+                    }
+                    _jm.show(mind);
+                });
+            }
+
+            var options = {
+                container:'jsmind_container',
+                editable:false,
+                theme:'success',
+                support_html:true
+            };
+            var jm = new jsMind(options);
+            _jm = jm
+        </script>
+    </body>
+</html>
