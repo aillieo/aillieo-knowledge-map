@@ -1,55 +1,236 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <link type="text/css" rel="stylesheet" href="jsmind/style/jsmind.css" />
-        <script type="text/javascript" src="jsmind/js/jsmind.js"></script>
-        <script type="text/javascript" src="jsmind/js/jsmind.draggable.js"></script>
-    </head>
-    <body>
-        <div id="layout">
-            <div id="menu">
-                <ul type="">
-                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
-                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
-                    <li><input type="radio" name="radio_tab_main" value="data/game-ai.jm" onclick="loadData()"/>Game AI</li>
-                </ul>
-            </div>
-            <div id="jsmind_container"></div>
+<head>
+    <meta charset="UTF-8">
+    <title>Aillieo Knowledge Map</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+    <div id="container" class="svg-container">
+        <div id="menu">
+            <ul type="">
+                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
+                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
+                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
+            </ul>
         </div>
+    </div>
+</body>
 
-        <script type="text/javascript">
-            var _jm = null;
-            function loadData(){
+<style>
+body {
+    margin: 0 0;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+}
 
-                var mind_url = null;
+.svg-container {
+    display: inline-block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content {
+    display: inline-block;
+}
 
-                var radios = document.getElementsByName('radio_tab_main');
+svg text {
+    text-anchor: middle;
+    user-select: none;
+}
+</style>
 
-                for (var i = 0; i < radios.length; i++) {
-                    var radio = radios[i];
-                    if (radio.checked) {
-                        var checked_value = radio.value;
-                        mind_url = checked_value;
-                    }
-                }
+<script>
+	var nodes = []
+	var edges = []
+	var forceSimulation
 
-                jsMind.util.ajax.get(mind_url,function(mind){
-                    if(!!mind){
-                        _jm.show(mind);
-                    }else{
-                        alert('can not open this file as mindmap');
-                    }
-                    _jm.show(mind);
-                });
+    var links = null
+    var linksText = null
+    var gs = null
+
+	function loadData()	{
+
+        var selected = null
+        var radios = document.getElementsByName('radio_tab_main')
+        for (var i = 0; i < radios.length; i++) {
+            var radio = radios[i]
+            if (selected == null || radio.checked) {
+                selected = radio.value
             }
+        }
 
-            var options = {
-                container:'jsmind_container',
-                editable:false,
-                theme:'success',
-                support_html:true
-            };
-            var jm = new jsMind(options);
-            _jm = jm
-        </script>
-    </body>
+        // console.log(selected)
+
+		data = d3.json('data/' + selected + '.json').then(function(d) {
+		    reloadData(d)
+		})
+	}
+
+    function reloadData(data) {
+        nodes = data.nodes
+        edges = data.edges
+
+        var oldsvg = d3.select('svg')
+        if (oldsvg)
+        {
+            oldsvg.remove()
+            oldsvg = null
+        }
+
+        var rect = d3.select('#container').node().getBoundingClientRect()
+        var width = rect.width
+        var height = rect.height
+
+        var svg = d3.select('#container')
+        .append('svg')
+        .classed('svg-content', true)
+        .attr('viewBox', [-width / 2, -height / 2, width, height])
+        // .attr("preserveAspectRatio", "xMinYMin meet")
+
+        d3.select(window)
+        .on('resize', () => {
+            var rect = d3.select('#container').node().getBoundingClientRect()
+            width = rect.width
+            height = rect.height
+            svg.attr('viewBox', [-width / 2, -height / 2, width, height])
+        })
+
+        // 根节点
+        var g = svg.append('g')
+
+        // 图例颜色
+        var scaleColor = d3.scaleOrdinal()
+            .domain(d3.range(nodes.length))
+            .range(d3.schemeCategory10)
+
+        // 新建一个forceSimulation
+        forceSimulation = d3.forceSimulation()
+            .force("link",d3.forceLink())
+            .force("charge",d3.forceManyBody())
+            .force("center",d3.forceCenter())
+
+        // 节点数据
+        forceSimulation.nodes(nodes)
+            .on('tick',linksTick)
+
+        // 边数据
+        forceSimulation.force('link')
+            .links(edges)
+            .distance(function (d,i) {
+                // 边长
+                return d.value * 100
+            })
+
+        // 先绘制边
+        links = g.append('g')
+            .selectAll('line')
+            .data(edges)
+            .enter()
+            .append('line')
+            .attr('stroke',function (d,i) {
+                // 颜色
+                return scaleColor(i)
+            })
+            // 线宽
+            .attr('storke-width','1')
+
+        // 边上的文本 读relation
+        // linksText = g.append('g')
+        //     .selectAll('text')
+        //     .data(edges)
+        //     .enter()
+        //     .append('text')
+        //     .text(function (d,i) {
+        //         return d.relation
+        //     })
+
+        // 创建节点分组
+        gs = g.selectAll('.circle')
+            .data(nodes)
+            .enter()
+            .append('g')
+            .attr('transform',function (d,i) {
+                return 'translate('+ d.x +','+ d.y +')'
+            })
+            .call(
+                d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended)
+            )
+            .on('click', (evt,d) => {
+                console.log(d)
+        })
+
+        // 绘制节点
+        gs.append('circle')
+            .attr('r',function (d,i) {
+                // 半径
+                return d.radius
+            })
+            .attr('fill',function (d,i) {
+                // 颜色
+                return scaleColor(i)
+            })
+
+        // 文本
+        gs.append('text')
+            .text(function (d,i) {
+                return d.name
+            })
+
+    }
+
+    // 先初始化成空的
+    reloadData({nodes:[],edges:[]})
+
+    // 真实的加载数据
+    loadData()
+
+    function linksTick() {
+        links && links
+            .attr("x1",function(d){return d.source.x})
+            .attr("y1",function(d){return d.source.y})
+            .attr("x2",function(d){return d.target.x})
+            .attr("y2",function(d){return d.target.y})
+
+        linksText && linksText
+            .attr("x",function(d) {
+                return (d.source.x+d.target.x)/2
+            })
+            .attr("y",function(d) {
+                return (d.source.y+d.target.y)/2
+            })
+
+        gs && gs.attr('transform',function (d,i) {
+            return 'translate('+ d.x +','+ d.y +')'
+        })
+    }
+
+    function dragstarted(evt) {
+        if (!evt.active) {
+            forceSimulation.alphaTarget(0.3).restart()
+        }
+        evt.subject.fx = evt.subject.x
+        evt.subject.fy = evt.subject.y
+    }
+
+    function dragged(evt) {
+        evt.subject.fx = evt.x
+        evt.subject.fy = evt.y
+    }
+
+    function dragended(evt) {
+        if (!evt.active) {
+            forceSimulation.alphaTarget(0)
+        }
+        evt.subject.fx = null
+        evt.subject.fy = null
+    }
+
+</script>
 </html>
