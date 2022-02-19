@@ -8,10 +8,7 @@
 <body>
     <div id="container" class="svg-container">
         <div id="menu">
-            <ul type="">
-                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
-                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
-                <li><input type="radio" name="radio_tab_main" value="game-ai" onclick="loadData()"/>Game AI</li>
+            <ul id = "radio_root">
             </ul>
         </div>
     </div>
@@ -52,23 +49,69 @@ svg text {
     var linksText = null
     var gs = null
 
-	function loadData()	{
+    function initRadioButtons() {
 
-        var selected = null
-        var radios = document.getElementsByName('radio_tab_main')
-        for (var i = 0; i < radios.length; i++) {
-            var radio = radios[i]
-            if (selected == null || radio.checked) {
-                selected = radio.value
+        // 读取索引文件
+        d3.json('data/index.json').then(function(indexFile) {
+            var preSelected = -1
+            var params = new URLSearchParams(window.location.search)
+
+            var queryName = params.get("name")
+            if (queryName != null)
+            {
+                for (var i = 0; i < indexFile.length; ++i) {
+                    if (queryName === indexFile[i]) {
+                        preSelected = i
+                        break
+                    }
+                }
             }
-        }
 
-        // console.log(selected)
+            if (preSelected < 0) {
+                var queryIndex = parseInt(params.get("index"))
+                if (queryIndex && queryIndex >=0 && queryIndex < indexFile.length) {
+                    preSelected = queryIndex
+                }
+            }
 
-		data = d3.json('data/' + selected + '.json').then(function(d) {
-		    reloadData(d)
-		})
-	}
+            console.log("preSelected " + preSelected)
+
+            if (preSelected < 0)
+            {
+                preSelected = 0
+            }
+
+            var radioRoot = d3.select('#radio_root')
+            for (let i = 0; i < indexFile.length; ++i) {
+                var li = radioRoot.append("li")
+                var input = li.append('input')
+                    .attr("type", "radio")
+                    .attr("name", "radio_tab_main")
+                    .attr("value", i)
+
+                if (i === preSelected) {
+                    input.attr("checked", true)
+                }
+                var text = li.append("text")
+                    .text(indexFile[i])
+            }
+
+            var selectedName = indexFile[preSelected]
+            data = d3.json('data/' + selectedName + '.json').then(function(d) {
+                reloadData(d)
+            })
+
+            radioRoot.on("change", function(d) {
+                var v = d.target.value
+                var selectedName = indexFile[v]
+                console.log(selectedName)
+
+                data = d3.json('data/' + selectedName + '.json').then(function(d) {
+                    reloadData(d)
+                })
+            });
+        })
+    }
 
     function reloadData(data) {
         nodes = data.nodes
@@ -189,7 +232,7 @@ svg text {
     reloadData({nodes:[],edges:[]})
 
     // 真实的加载数据
-    loadData()
+    initRadioButtons()
 
     function linksTick() {
         links && links
