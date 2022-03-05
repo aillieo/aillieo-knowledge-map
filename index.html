@@ -41,7 +41,12 @@ svg text {
 </style>
 
 <script>
-	var nodes = []
+    var fileList = []
+    var allowShowAll = false
+
+    var radioRoot = null
+
+    var nodes = []
 	var edges = []
 	var forceSimulation
 
@@ -53,67 +58,139 @@ svg text {
 
         // 读取索引文件
         d3.json('data/index.json').then(function(indexFile) {
-            var preSelected = -1
+            var preSelected
             var params = new URLSearchParams(window.location.search)
+
+            fileList = indexFile.files
+            allowShowAll = indexFile["allow-show-all"] === true
 
             var queryName = params.get("name")
             if (queryName != null)
             {
-                for (var i = 0; i < indexFile.length; ++i) {
-                    if (queryName === indexFile[i]) {
+                for (var i = 0; i < fileList.length; ++i) {
+                    if (queryName === fileList[i]) {
                         preSelected = i
                         break
                     }
                 }
             }
 
-            if (preSelected < 0) {
+            if (preSelected === undefined) {
                 var queryIndex = parseInt(params.get("index"))
-                if (queryIndex && queryIndex >=0 && queryIndex < indexFile.length) {
+                if (queryIndex) {
                     preSelected = queryIndex
+                }
+                else {
+                    preSelected = 0
                 }
             }
 
             console.log("preSelected " + preSelected)
 
-            if (preSelected < 0)
-            {
+            if (preSelected === -1) {
+                if (!allowShowAll) {
+                    preSelected = 0
+                }
+            }
+            else if (preSelected < 0 || preSelected >= fileList.length) {
                 preSelected = 0
             }
 
-            var radioRoot = d3.select('#radio_root')
-            for (let i = 0; i < indexFile.length; ++i) {
-                var li = radioRoot.append("li")
-                var input = li.append('input')
-                    .attr("type", "radio")
-                    .attr("name", "radio_tab_main")
-                    .attr("value", i)
+            radioRoot = d3.select('#radio_root')
 
-                if (i === preSelected) {
-                    input.attr("checked", true)
-                }
-                var text = li.append("text")
-                    .text(indexFile[i])
+            for (let i = 0; i < fileList.length; ++i) {
+                createRadio(i, i === preSelected, fileList[i])
             }
 
-            var selectedName = indexFile[preSelected]
-            data = d3.json('data/' + selectedName + '.json').then(function(d) {
-                reloadData(d)
-            })
+            if (allowShowAll)
+            {
+                createRadio(-1, preSelected === -1, "all")
+            }
 
             radioRoot.on("change", function(d) {
                 var v = d.target.value
-                var selectedName = indexFile[v]
-                console.log(selectedName)
+                loadFile(v)
+            })
 
-                data = d3.json('data/' + selectedName + '.json').then(function(d) {
-                    reloadData(d)
-                })
-            });
+            loadFile(preSelected)
         })
     }
 
-    function reloadData(data) {
+    function createRadio(value, checked, textDisplay) {
+        var li = radioRoot.append("li")
+        var input = li.append('input')
+            .attr("type", "radio")
+            .attr("name", "radio_tab_main")
+            .attr("value", value)
+
+        if (checked) {
+            input.attr("checked", true)
+        }
+        var text = li.append("text")
+            .text(textDisplay)
+    }
+
+    function loadFile(fileIndex) {
+        var showAll = allowShowAll && fileIndex === -1
+
+        if (!showAll) {
+            var selectedName = fileList[fileIndex]
+            d3.json('data/' + selectedName + '.json').then(function(d) {
+                reloadData([d])
+            })
+        }
+        else {
+            var loadAll = fileList.map(function(filename) {
+                console.log(filename)
+                return d3.json('data/' + filename + '.json')
+            })
+            Promise.all(loadAll).then(function(allData) {
+                reloadData(allData)
+            })
+        }
+    }
+
+    function reorganizeData(rawData) {
+
+        var nodeMapping = {}
+
+        var data = {nodes : [], edges : [],}
+        rawData.forEach(function(d) {
+            d.nodes.forEach(function(n) {
+                if (n.length >= 2) {
+                    var name = n[0]
+                    var id = data.nodes.length
+                    if (!nodeMapping[name]) {
+                        var newNode = {
+                            id : id,
+                            name : n[0],
+                            radius : n[1],
+                        }
+                        nodeMapping[name] = id
+                        data.nodes.push(newNode)
+                    }
+                }
+            })
+
+            d.edges.forEach(function(e) {
+                if (e.length >= 3) {
+                    var newEdge = {
+                        source : nodeMapping[e[0]],
+                        target : nodeMapping[e[1]],
+                        value : e[2]
+                    }
+                    data.edges.push(newEdge)
+                }
+            })
+        })
+
+        return data
+    }
+
+    function reloadData(rawData) {
+
+        var data = reorganizeData(rawData)
+
         nodes = data.nodes
         edges = data.edges
 
@@ -157,6 +234,7 @@ svg text {
             .force("center",d3.forceCenter())
 
         // 节点数据
+
         forceSimulation.nodes(nodes)
             .on('tick',linksTick)
 
@@ -229,7 +307,7 @@ svg text {
     }
 
     // 先初始化成空的
-    reloadData({nodes:[],edges:[]})
+    reloadData([])
 
     // 真实的加载数据
     initRadioButtons()

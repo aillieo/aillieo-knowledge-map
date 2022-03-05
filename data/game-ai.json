@@ -1,73 +1,21 @@
 {
   "nodes": [
-    {
-      "name": "Game AI",
-      "radius": 30
-    },
-    {
-      "name": "Code",
-      "radius": 20
-    },
-    {
-      "name": "Solving",
-      "radius": 20
-    },
-    {
-      "name": "Learning",
-      "radius": 20
-    },
-    {
-      "name": "Finite state machine",
-      "radius": 10
-    },
-    {
-      "name": "Behavior tree",
-      "radius": 10
-    },
-    {
-      "name": "Reinforcement Learning",
-      "radius": 10
-    },
-    {
-      "name": "Imitation Learning",
-      "radius": 10
-    }
+    ["Game AI", 30],
+    ["Code", 20],
+    ["Solving", 20],
+    ["Learning", 20],
+    ["Finite state machine", 10],
+    ["Behavior tree", 10],
+    ["Reinforcement Learning", 10],
+    ["Imitation Learning", 10]
   ],
   "edges": [
-    {
-      "source": 0,
-      "target": 1,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 2,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 3,
-      "value": 1.5
-    },
-    {
-      "source": 1,
-      "target": 4,
-      "value": 1
-    },
-    {
-      "source": 1,
-      "target": 5,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 6,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 7,
-      "value": 1
-    }
+    ["Game AI", "Code", 1.5],
+    ["Game AI", "Solving", 1.5],
+    ["Game AI", "Learning", 1.5],
+    ["Code", "Finite state machine", 1],
+    ["Code", "Behavior tree", 1],
+    ["Learning", "Reinforcement Learning", 1],
+    ["Learning", "Imitation Learning", 1]
   ]
 }

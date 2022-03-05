@@ -1,73 +1,17 @@
 {
   "nodes": [
-    {
-      "name": "Reinforcement Learning",
-      "radius": 30
-    },
-    {
-      "name": "Code",
-      "radius": 20
-    },
-    {
-      "name": "Solving",
-      "radius": 20
-    },
-    {
-      "name": "Learning",
-      "radius": 20
-    },
-    {
-      "name": "Finite state machine",
-      "radius": 10
-    },
-    {
-      "name": "Behavior tree",
-      "radius": 10
-    },
-    {
-      "name": "Reinforcement Learning",
-      "radius": 10
-    },
-    {
-      "name": "Imitation Learning",
-      "radius": 10
-    }
+    ["Reinforcement Learning", 30],
+    ["Value-based", 20],
+    ["Policy-based", 20],
+    ["Deep Q Learning", 10],
+    ["Actor Critic", 10],
+    ["Policy Gradient", 10]
   ],
   "edges": [
-    {
-      "source": 0,
-      "target": 1,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 2,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 3,
-      "value": 1.5
-    },
-    {
-      "source": 1,
-      "target": 4,
-      "value": 1
-    },
-    {
-      "source": 1,
-      "target": 5,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 6,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 7,
-      "value": 1
-    }
+    ["Reinforcement Learning", "Value-based", 1.5],
+    ["Reinforcement Learning", "Policy-based", 1.5],
+    ["Value-based", "Deep Q Learning", 1],
+    ["Policy-based", "Actor Critic", 1],
+    ["Policy-based", "Policy Gradient", 1]
   ]
 }

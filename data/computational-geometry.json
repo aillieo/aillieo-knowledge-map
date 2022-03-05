@@ -1,73 +1,19 @@
 {
   "nodes": [
-    {
-      "name": "Computational Geometry",
-      "radius": 30
-    },
-    {
-      "name": "Code",
-      "radius": 20
-    },
-    {
-      "name": "Solving",
-      "radius": 20
-    },
-    {
-      "name": "Learning",
-      "radius": 20
-    },
-    {
-      "name": "Finite state machine",
-      "radius": 10
-    },
-    {
-      "name": "Behavior tree",
-      "radius": 10
-    },
-    {
-      "name": "Reinforcement Learning",
-      "radius": 10
-    },
-    {
-      "name": "Imitation Learning",
-      "radius": 10
-    }
+    ["Computational Geometry", 30],
+    ["Polygon Triangulation", 20],
+    ["Convex Hulls", 10],
+    ["Delaunay Triangulations", 10],
+    ["Ear-Clipping Triangulations", 10],
+    ["Voronoi Diagrams", 10],
+    ["2D Intersections", 10]
   ],
   "edges": [
-    {
-      "source": 0,
-      "target": 1,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 2,
-      "value": 1.5
-    },
-    {
-      "source": 0,
-      "target": 3,
-      "value": 1.5
-    },
-    {
-      "source": 1,
-      "target": 4,
-      "value": 1
-    },
-    {
-      "source": 1,
-      "target": 5,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 6,
-      "value": 1
-    },
-    {
-      "source": 3,
-      "target": 7,
-      "value": 1
-    }
+    ["Computational Geometry", "Polygon Triangulation", 1.5],
+    ["Computational Geometry", "Convex Hulls", 1.5],
+    ["Computational Geometry", "2D Intersections", 1.5],
+    ["Polygon Triangulation", "Ear-Clipping Triangulations", 1],
+    ["Polygon Triangulation", "Delaunay Triangulations", 1],
+    ["Delaunay Triangulations", "Voronoi Diagrams", 1]
   ]
 }

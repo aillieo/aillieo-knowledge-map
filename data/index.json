@@ -1,5 +1,8 @@
-[
-  "game-ai",
-  "reinforcement-learning",
-  "computational-geometry"
-]
+{
+  "files" : [
+    "game-ai",
+    "reinforcement-learning",
+    "computational-geometry"
+  ],
+  "allow-show-all" : true
+}
