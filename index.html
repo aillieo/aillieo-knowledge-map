@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Aillieo Knowledge Map</title>
@@ -41,33 +41,33 @@ svg text {
 </style>
 
 <script>
-    var fileList = []
-    var allowShowAll = false
+    let fileList = []
+    let allowShowAll = false
 
-    var radioRoot = null
+    let radioRoot = null
 
-    var nodes = []
-	var edges = []
-	var forceSimulation
+    let nodes = []
+    let edges = []
+    let forceSimulation
 
-    var links = null
-    var linksText = null
-    var gs = null
+    let links = null
+    let linksText = null
+    let gs = null
 
     function initRadioButtons() {
 
         // 读取索引文件
         d3.json('data/index.json').then(function(indexFile) {
-            var preSelected
-            var params = new URLSearchParams(window.location.search)
+            let preSelected;
+            const params = new URLSearchParams(window.location.search)
 
             fileList = indexFile.files
             allowShowAll = indexFile["allow-show-all"] === true
 
-            var queryName = params.get("name")
+            const queryName = params.get("name")
             if (queryName != null)
             {
-                for (var i = 0; i < fileList.length; ++i) {
+                for (let i = 0; i < fileList.length; ++i) {
                     if (queryName === fileList[i]) {
                         preSelected = i
                         break
@@ -76,7 +76,7 @@ svg text {
             }
 
             if (preSelected === undefined) {
-                var queryIndex = parseInt(params.get("index"))
+                const queryIndex = parseInt(params.get("index"))
                 if (queryIndex) {
                     preSelected = queryIndex
                 }
@@ -108,8 +108,8 @@ svg text {
             }
 
             radioRoot.on("change", function(d) {
-                var v = d.target.value
-                loadFile(v)
+                const v = d.target.value
+                loadFile(parseInt(v))
             })
 
             loadFile(preSelected)
@@ -117,8 +117,8 @@ svg text {
     }
 
     function createRadio(value, checked, textDisplay) {
-        var li = radioRoot.append("li")
-        var input = li.append('input')
+        const li = radioRoot.append("li")
+        const input = li.append('input')
             .attr("type", "radio")
             .attr("name", "radio_tab_main")
             .attr("value", value)
@@ -126,22 +126,21 @@ svg text {
         if (checked) {
             input.attr("checked", true)
         }
-        var text = li.append("text")
+        const text = li.append("text")
             .text(textDisplay)
     }
 
     function loadFile(fileIndex) {
-        var showAll = allowShowAll && fileIndex === -1
+        const showAll = allowShowAll && fileIndex === -1
 
         if (!showAll) {
-            var selectedName = fileList[fileIndex]
+            const selectedName = fileList[fileIndex]
             d3.json('data/' + selectedName + '.json').then(function(d) {
                 reloadData([d])
             })
         }
         else {
-            var loadAll = fileList.map(function(filename) {
-                console.log(filename)
+            const loadAll = fileList.map(function(filename) {
                 return d3.json('data/' + filename + '.json')
             })
             Promise.all(loadAll).then(function(allData) {
@@ -152,16 +151,16 @@ svg text {
 
     function reorganizeData(rawData) {
 
-        var nodeMapping = {}
+        const nodeMapping = {}
 
-        var data = {nodes : [], edges : [],}
+        const data = {nodes : [], edges : [],}
         rawData.forEach(function(d) {
             d.nodes.forEach(function(n) {
                 if (n.length >= 2) {
-                    var name = n[0]
-                    var id = data.nodes.length
+                    const name = n[0]
+                    const id = data.nodes.length
                     if (!nodeMapping[name]) {
-                        var newNode = {
+                        const newNode = {
                             id : id,
                             name : n[0],
                             radius : n[1],
@@ -174,7 +173,7 @@ svg text {
 
             d.edges.forEach(function(e) {
                 if (e.length >= 3) {
-                    var newEdge = {
+                    const newEdge = {
                         source : nodeMapping[e[0]],
                         target : nodeMapping[e[1]],
                         value : e[2]
@@ -189,23 +188,22 @@ svg text {
 
     function reloadData(rawData) {
 
-        var data = reorganizeData(rawData)
+        const data = reorganizeData(rawData)
 
         nodes = data.nodes
         edges = data.edges
 
-        var oldsvg = d3.select('svg')
-        if (oldsvg)
+        const oldSvg = d3.select('svg')
+        if (oldSvg)
         {
-            oldsvg.remove()
-            oldsvg = null
+            oldSvg.remove()
         }
 
-        var rect = d3.select('#container').node().getBoundingClientRect()
-        var width = rect.width
-        var height = rect.height
+        const rect = d3.select('#container').node().getBoundingClientRect()
+        let width = rect.width
+        let height = rect.height
 
-        var svg = d3.select('#container')
+        const svg = d3.select('#container')
         .append('svg')
         .classed('svg-content', true)
         .attr('viewBox', [-width / 2, -height / 2, width, height])
@@ -213,17 +211,17 @@ svg text {
 
         d3.select(window)
         .on('resize', () => {
-            var rect = d3.select('#container').node().getBoundingClientRect()
-            width = rect.width
-            height = rect.height
+            const rect = d3.select('#container').node().getBoundingClientRect()
+            width = rect.width;
+            height = rect.height;
             svg.attr('viewBox', [-width / 2, -height / 2, width, height])
         })
 
         // 根节点
-        var g = svg.append('g')
+        const g = svg.append('g')
 
         // 图例颜色
-        var scaleColor = d3.scaleOrdinal()
+        const scaleColor = d3.scaleOrdinal()
             .domain(d3.range(nodes.length))
             .range(d3.schemeCategory10)
 
@@ -257,7 +255,7 @@ svg text {
                 return scaleColor(i)
             })
             // 线宽
-            .attr('storke-width','1')
+            .attr('stroke-width','1')
 
         // 边上的文本 读relation
         // linksText = g.append('g')
